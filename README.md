@@ -1,17 +1,17 @@
-# 💼 Registro de Créditos
+# -Registro de Créditos
 
 Este proyecto es una aplicación web sencilla hecha con Flask y SQLite, pensada para registrar, consultar y administrar créditos otorgados a diferentes clientes. Incluye formularios con validaciones, mensajes dinámicos, paginación y una gráfica para visualizar los datos de forma clara.
 
 ---
 
-## ✅ Requisitos
+## -Requisitos
 
 - Python 3.13.5
 - Flask
 
 ---
 
-## ⚙️ Instalación
+## - Instalación
 
 1. **Clonar el proyecto**
 
@@ -31,7 +31,7 @@ pip install flask
 
 ---
 
-## 🚀 Ejecución
+## -Ejecución
 
 Inicia la aplicación con el siguiente comando:
 
@@ -47,7 +47,7 @@ http://localhost:5000
 
 ---
 
-## 📌 Funcionalidades
+## - Funcionalidades
 
 - Registro de nuevos créditos mediante formularios con validación.
 - Edición y eliminación de créditos desde una tabla interactiva.
@@ -58,7 +58,7 @@ http://localhost:5000
 
 ---
 
-## 🗂️ Estructura del Proyecto
+## - Estructura del Proyecto
 
 ```
 /registro-creditos/
@@ -79,7 +79,7 @@ http://localhost:5000
 
 ---
 
-## 📊 Tecnologías Usadas
+## - Tecnologías Usadas
 
 - Flask
 - SQLite
