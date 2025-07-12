@@ -1,3 +1,8 @@
+---
+Desarrollado por: [Sandra Nemesio Garcia]
+Fecha de creación: Julio 2025
+---
+
 # -Registro de Créditos
 
 Este proyecto es una aplicación web sencilla hecha con Flask y SQLite, pensada para registrar, consultar y administrar créditos otorgados a diferentes clientes. Incluye formularios con validaciones, mensajes dinámicos, paginación y una gráfica para visualizar los datos de forma clara.
