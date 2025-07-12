@@ -1,4 +1,4 @@
-```bash
+```
 Desarrollado por: [Sandra Nemesio Garcia]
 Fecha de creación: Julio 2025
 ```
