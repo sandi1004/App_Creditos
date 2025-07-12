@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Créditos Otorgados</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body class="bg-light">
+
+    <div id="flash-alerts">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container my-5 p-4 bg-white shadow rounded">
+
+        <!-- Header y botón agregar -->
+        <header class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 text-primary fw-bold mb-0">
+                <i class="bi bi-journal-text me-2"></i> Créditos Otorgados
+            </h1>
+            <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalAgregar"
+                aria-label="Agregar crédito">
+                <i class="bi bi-plus-circle-fill"></i>
+            </button>
+        </header>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center" id="tablaCreditos">
+                <thead class="table-light">
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Monto</th>
+                        <th>Tasa</th>
+                        <th>Plazo</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in creditos %}
+                    <tr>
+                        <td>{{ c.cliente }}</td>
+                        <td>${{ c.monto }}</td>
+                        <td>{{ c.tasa_interes }}%</td>
+                        <td>{{ c.plazo }} meses</td>
+                        <td>{{ c.fecha_otorgamiento }}</td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm me-1" data-bs-toggle="modal"
+                                data-bs-target="#modalEditar" data-id="{{ c.id }}" data-cliente="{{ c.cliente }}"
+                                data-monto="{{ c.monto }}" data-tasa="{{ c.tasa_interes }}" data-plazo="{{ c.plazo }}"
+                                data-fecha="{{ c.fecha_otorgamiento }}" aria-label="Editar">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm btnEliminar" data-id="{{ c.id }}"
+                                aria-label="Eliminar">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <nav aria-label="Paginación créditos">
+            <ul class="pagination justify-content-center" id="paginacion"></ul>
+        </nav>
+
+        <!-- Gráfica -->
+        <div class="mb-3 text-end">
+            <label for="filtroGrafica" class="form-label fw-semibold me-2">Ver por:</label>
+            <select id="filtroGrafica" class="form-select d-inline-block w-auto">
+                <option value="cliente">Cliente</option>
+                <option value="rango">Rango de Montos</option>
+            </select>
+        </div>
+        <h2 class="text-center text-secondary fw-bold mb-3">
+            <i class="bi bi-pie-chart-fill me-2"></i>Distribución de Créditos
+        </h2>
+        <canvas id="grafica" width="600" height="400" class="mx-auto d-block"></canvas>
+
+    </div>
+
+    <!-- MODAL AGREGAR -->
+    <div class="modal fade" id="modalAgregar" tabindex="-1" aria-labelledby="modalAgregarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-sm rounded">
+                <form action="/agregar" method="post" class="needs-validation" novalidate>
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Agregar Crédito</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Campos del formulario -->
+                        <div class="mb-3">
+                            <label for="cliente" class="form-label fw-semibold">Cliente</label>
+                            <input type="text" class="form-control" name="cliente" id="cliente" required
+                                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" title="No se permiten caracteres númericos"
+                                placeholder="Nombre del cliente">
+                        </div>
+                        <div class="mb-3">
+                            <label for="monto" class="form-label fw-semibold">Monto</label>
+                            <input type="number" class="form-control" name="monto" id="monto" min="0.01" step="0.01"
+                                required placeholder="Ej. 1500.00">
+                        </div>
+                        <div class="mb-3">
+                            <label for="tasa" class="form-label fw-semibold">Tasa de Interés (%)</label>
+                            <input type="number" class="form-control" name="tasa" id="tasa" min="0" max="100"
+                                step="0.01" required placeholder="Ej. 12.5">
+                        </div>
+                        <div class="mb-3">
+                            <label for="plazo" class="form-label fw-semibold">Plazo (meses)</label>
+                            <input type="number" class="form-control" name="plazo" id="plazo" min="1" required
+                                placeholder="Ej. 6">
+                        </div>
+                        <div class="mb-3">
+                            <label for="fecha" class="form-label fw-semibold">Fecha de Otorgamiento</label>
+                            <input type="date" class="form-control" name="fecha" id="fecha" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success" aria-label="Guardar">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Cancelar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDITAR -->
+    <div class="modal fade" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-sm rounded">
+                <form id="formEditar" action="/editar" method="post" class="needs-validation" novalidate>
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title text-dark"><i class="bi bi-pencil-square me-2"></i>Editar Crédito</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="edit-id">
+                        <div class="mb-3">
+                            <label for="edit-cliente" class="form-label fw-semibold">Cliente</label>
+                            <input type="text" class="form-control" name="cliente" id="edit-cliente" required
+                                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+" title="No se permiten caracteres númericos">
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-monto" class="form-label fw-semibold">Monto</label>
+                            <input type="number" class="form-control" name="monto" id="edit-monto" min="0.01"
+                                step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-tasa" class="form-label fw-semibold">Tasa (%)</label>
+                            <input type="number" class="form-control" name="tasa" id="edit-tasa" min="0" max="100"
+                                step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-plazo" class="form-label fw-semibold">Plazo</label>
+                            <input type="number" class="form-control" name="plazo" id="edit-plazo" min="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-fecha" class="form-label fw-semibold">Fecha</label>
+                            <input type="date" class="form-control" name="fecha" id="edit-fecha" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary" aria-label="Guardar cambios">
+                            <i class="bi bi-save"></i>
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Cancelar">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- MODAL CONFIRMACIÓN ELIMINAR -->
+    <div class="modal fade" id="modalConfirmarEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-sm rounded">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="modalEliminarLabel"><i
+                            class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">¿Estás seguro que deseas eliminar este crédito?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <a id="btnConfirmarEliminar" class="btn btn-danger" href="#">Eliminar</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/chart.js"></script>
+    <script>
+        // Ocultar alertas automáticamente
+        document.addEventListener('DOMContentLoaded', () => {
+            const alertContainer = document.getElementById('flash-alerts');
+            if (!alertContainer) return;
+
+            const alerts = alertContainer.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.add('fade-out');
+                    setTimeout(() => {
+                        const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                        bsAlert.close();
+                    }, 500); // Espera 0.5s para completar el fade antes de cerrar
+                }, 2000); // Aparece 2 segundos antes de empezar a desvanecerse
+            });
+        });
+    </script>
+    <script>
+        // Validaciones Bootstrap
+        (() => {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })();
+
+        // Modal Editar
+        document.getElementById("modalEditar").addEventListener("show.bs.modal", event => {
+            const button = event.relatedTarget;
+            document.getElementById("edit-id").value = button.getAttribute("data-id");
+            document.getElementById("edit-cliente").value = button.getAttribute("data-cliente");
+            document.getElementById("edit-monto").value = button.getAttribute("data-monto");
+            document.getElementById("edit-tasa").value = button.getAttribute("data-tasa");
+            document.getElementById("edit-plazo").value = button.getAttribute("data-plazo");
+            document.getElementById("edit-fecha").value = button.getAttribute("data-fecha");
+        });
+
+        // Confirmar eliminación con modal
+        document.querySelectorAll('.btnEliminar').forEach(button => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                const confirmarBtn = document.getElementById('btnConfirmarEliminar');
+                confirmarBtn.href = `/eliminar/${id}`;
+                const modal = new bootstrap.Modal(document.getElementById('modalConfirmarEliminar'));
+                modal.show();
+            });
+        });
+
+
+        // Paginación
+        const rowsPerPage = 5;
+        const table = document.getElementById('tablaCreditos');
+        const tbody = table.querySelector('tbody');
+        const rows = tbody.querySelectorAll('tr');
+        const pagination = document.getElementById('paginacion');
+
+        function displayRows(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            rows.forEach((row, idx) => {
+                row.style.display = (idx >= start && idx < end) ? '' : 'none';
+            });
+        }
+
+        function setupPagination() {
+            const pageCount = Math.ceil(rows.length / rowsPerPage);
+            pagination.innerHTML = '';
+
+            for (let i = 1; i <= pageCount; i++) {
+                const li = document.createElement('li');
+                li.classList.add('page-item');
+                if (i === 1) li.classList.add('active');
+
+                const a = document.createElement('a');
+                a.classList.add('page-link');
+                a.href = '#';
+                a.textContent = i;
+
+                a.addEventListener('click', e => {
+                    e.preventDefault();
+                    displayRows(i);
+                    pagination.querySelector('.active').classList.remove('active');
+                    li.classList.add('active');
+                });
+
+                li.appendChild(a);
+                pagination.appendChild(li);
+            }
+        }
+
+        displayRows(1);
+        setupPagination();
+    </script>
+</body>
+
+</html>
